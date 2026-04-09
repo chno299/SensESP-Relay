@@ -35,18 +35,14 @@ void setup() {
   // Pro Relay: PUT-Listener empfaengt SK-Befehl -> DigitalOutput schaltet GPIO
   //            RepeatSensor liest GPIO-Zustand -> SKOutput meldet Status
   const char* skPaths[NUM_RELAYS] = {
-    "electrical.switches.relay0.state",
     "electrical.switches.relay1.state",
     "electrical.switches.relay2.state",
     "electrical.switches.relay3.state",
     "electrical.switches.relay4.state",
     "electrical.switches.relay5.state",
     "electrical.switches.relay6.state",
-    "electrical.switches.relay7.state"
-  };
-  const char* configPaths[NUM_RELAYS] = {
-    "/Relay/0/State", "/Relay/1/State", "/Relay/2/State", "/Relay/3/State",
-    "/Relay/4/State", "/Relay/5/State", "/Relay/6/State", "/Relay/7/State"
+    "electrical.switches.relay7.state",
+    "electrical.switches.relay8.state"
   };
 
   for (int i = 0; i < NUM_RELAYS; i++) {
