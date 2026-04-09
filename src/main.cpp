@@ -72,18 +72,23 @@ void setup() {
       "system.esp32relay.heartbeat");
   heartbeat_sensor->connect_to(heartbeat_sk);
 
-  // Connectivity-Watchdog: Reboot wenn WiFi > 2 Min weg
-  static unsigned long lastWifiOk = 0;
-  constexpr unsigned long WIFI_TIMEOUT_MS = 120000;  // 2 Minuten
+  // Connectivity-Watchdog: Reboot wenn WiFi oder SK-Server > 2 Min weg
+  static unsigned long lastConnOk = 0;
+  constexpr unsigned long CONN_TIMEOUT_MS = 120000;  // 2 Minuten
 
   event_loop()->onRepeat(10000, []() {
-    if (WiFi.status() == WL_CONNECTED) {
-      lastWifiOk = millis();
+    if (WiFi.status() == WL_CONNECTED && sensesp_app->get_ws_client() &&
+        sensesp_app->get_ws_client()->is_connected()) {
+      lastConnOk = millis();
     } else {
-      unsigned long down = millis() - lastWifiOk;
-      debugW("WiFi nicht verbunden seit %lu s", down / 1000);
-      if (down > WIFI_TIMEOUT_MS) {
-        debugW("WiFi Timeout -> Neustart!");
+      unsigned long down = millis() - lastConnOk;
+      if (WiFi.status() != WL_CONNECTED) {
+        debugW("WiFi nicht verbunden seit %lu s", down / 1000);
+      } else {
+        debugW("SK-Server nicht verbunden seit %lu s", down / 1000);
+      }
+      if (down > CONN_TIMEOUT_MS) {
+        debugW("Connectivity Timeout -> Neustart!");
         ESP.restart();
       }
     }
