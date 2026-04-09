@@ -50,19 +50,21 @@ void setup() {
   };
 
   for (int i = 0; i < NUM_RELAYS; i++) {
+    int pin = RELAY_PINS[i];
+    pinMode(pin, OUTPUT);
+
     // PUT empfangen -> GPIO schalten
     auto listener = new BoolSKPutRequestListener(skPaths[i]);
     auto relay_out = new DigitalOutput(RELAY_PINS[i]);
     listener->connect_to(relay_out);
 
-    // GPIO-Zustand zurueck an SK melden
-    int pin = RELAY_PINS[i];
-    auto relay_sensor = std::make_shared<RepeatSensor<bool>>(
+    // GPIO-Zustand zurueck an SK melden (new statt shared_ptr, damit Objekte nicht am Loop-Ende zerstoert werden)
+    auto relay_sensor = new RepeatSensor<bool>(
         1000, [pin]() -> bool {
           return digitalRead(pin) == HIGH;
         });
 
-    auto relay_sk = std::make_shared<SKOutput<bool>>(skPaths[i]);
+    auto relay_sk = new SKOutput<bool>(skPaths[i]);
     relay_sensor->connect_to(relay_sk);
   }
 
@@ -70,8 +72,7 @@ void setup() {
   auto heartbeat_sensor = std::make_shared<RepeatSensor<int>>(
       5000, []() -> int { return 1; });
   auto heartbeat_sk = std::make_shared<SKOutput<int>>(
-      "system.esp32relay.heartbeat",
-      "/System/ESP32Relay/Heartbeat");
+      "system.esp32relay.heartbeat");
   heartbeat_sensor->connect_to(heartbeat_sk);
 
   // Watchdog: 30s Timeout
